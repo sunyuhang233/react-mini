@@ -12,7 +12,8 @@
 		"lib": ["esnext", "dom"] ,// 支持的类库 esnext及dom
     "baseUrl": "./",
     "paths": {
-      "@/*": ["./packages/*"]
+      "@/*": ["./packages/*"],
+			"hostConfig": ["./packages/react-reconciler/src/hostConfig.ts"]
     }
 	}
 }

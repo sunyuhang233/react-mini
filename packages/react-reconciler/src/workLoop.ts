@@ -1,10 +1,27 @@
 import { beginWork } from "./beginWork";
 import { completeWork } from "./completeWork";
-import { FiberNode } from "./fiber";
+import { createWorkInProgress, FiberNode, FiberRootNode } from "./fiber";
+import { HostRoot } from "./workTags";
 
 let workInProgress: FiberNode | null = null;
 
-const renderRoot = (root:FiberNode)=>{
+export const scheduleUpdateOnFiber = (fiber: FiberNode) => {
+  const root = markUpdateFromFiberToRoot(fiber);
+  renderRoot(root);
+}
+
+const markUpdateFromFiberToRoot=(fiber:FiberNode)=>{
+  let node = fiber;
+  while(node.return!==null){
+    node = node.return
+  }
+  if(node.tag===HostRoot){
+    return node.stateNode
+  }
+  return null
+}
+
+const renderRoot = (root:FiberRootNode)=>{
   prepareFreshStack(root);
   do{
     try {
@@ -16,8 +33,8 @@ const renderRoot = (root:FiberNode)=>{
   } while(true) 
 }
 
-const prepareFreshStack = (root:FiberNode)=>{
-  workInProgress = root
+const prepareFreshStack = (root:FiberRootNode)=>{
+ workInProgress = createWorkInProgress(root.current, {});
 }
 
 const workLoop = ()=>{
