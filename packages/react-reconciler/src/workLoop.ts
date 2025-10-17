@@ -10,59 +10,64 @@ export const scheduleUpdateOnFiber = (fiber: FiberNode) => {
   renderRoot(root);
 }
 
-const markUpdateFromFiberToRoot=(fiber:FiberNode)=>{
+const markUpdateFromFiberToRoot = (fiber: FiberNode) => {
   let node = fiber;
-  while(node.return!==null){
+  while (node.return !== null) {
     node = node.return
   }
-  if(node.tag===HostRoot){
+  if (node.tag === HostRoot) {
     return node.stateNode
   }
   return null
 }
 
-const renderRoot = (root:FiberRootNode)=>{
+const renderRoot = (root: FiberRootNode) => {
   prepareFreshStack(root);
-  do{
+  do {
     try {
       workLoop()
     } catch (error) {
-      console.error(error,'renderRoot error');
+      if (__DEV__) {
+        console.error(error, 'renderRoot error');
+      }
       workInProgress = null;
     }
-  } while(true) 
+  } while (true)
+  const finishedWork = root.current.alternate
+  root.finishedWork=finishedWork
+  commitRoot(root)
 }
 
-const prepareFreshStack = (root:FiberRootNode)=>{
- workInProgress = createWorkInProgress(root.current, {});
+const prepareFreshStack = (root: FiberRootNode) => {
+  workInProgress = createWorkInProgress(root.current, {});
 }
 
-const workLoop = ()=>{
-  while(workInProgress){
+const workLoop = () => {
+  while (workInProgress) {
     performUnitOfWork(workInProgress)
   }
 }
 
-const performUnitOfWork = (fiber: FiberNode)=>{
+const performUnitOfWork = (fiber: FiberNode) => {
   const next = beginWork(fiber)
   fiber.memoizedProps = fiber.pendingProps
-  if(next===null){
+  if (next === null) {
     completeUnitOfWork(fiber)
-  }else{
+  } else {
     workInProgress = next
   }
 }
 
-const completeUnitOfWork = (fiber: FiberNode)=>{
-  let node : FiberNode | null = fiber;
-  do { 
+const completeUnitOfWork = (fiber: FiberNode) => {
+  let node: FiberNode | null = fiber;
+  do {
     completeWork(node)
     const sibing = node.sibling
-    if(sibing != null){
-      workInProgress =sibing
+    if (sibing != null) {
+      workInProgress = sibing
       return
     }
-    node  = node.return
+    node = node.return
     workInProgress = node
   } while (node != null)
 }
