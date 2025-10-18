@@ -2,7 +2,7 @@ import { FiberNode } from "./fiber";
 import { appendInitialChild, Container, createInstance, createTextInstance } from "hostConfig";
 import { HostComponent, HostRoot, HostText } from "./workTags";
 import { NoFlags } from "./fiberFlags";
-
+// 生成更新计划，计算和收集更新 flags
 export const completeWork = (wip: FiberNode) => {
   const newProps = wip.pendingProps
   const current = wip.alternate
@@ -14,19 +14,26 @@ export const completeWork = (wip: FiberNode) => {
       if (current && wip.stateNode) {
 
       } else {
+        // 首屏渲染阶段
+        // 构建 DOM
         const instance = createInstance(wip.type, newProps)
         appendAllChildren(instance, wip)
+        // 将 DOM 插入到 DOM 树中
         wip.stateNode = instance
       }
+      // 收集更新 flags
       bubbleProperties(wip)
       return null;
     case HostText:
       if (current && wip.stateNode) {
 
       } else {
+        // 首屏渲染阶段
+        // 构建 DOM
         const instance = createTextInstance(newProps.content)
         wip.stateNode = instance
       }
+      // 收集更新 flags
       bubbleProperties(wip)
       return null;
     default:
@@ -46,8 +53,10 @@ function appendAllChildren(
   let node = workInProgress.child;
   while (node !== null) {
     if (node.tag == HostComponent || node.tag == HostText) {
+      // 处理原生 DOM 元素节点或文本节点
       appendInitialChild(parent, node.stateNode);
     } else if (node.child !== null) {
+      // 递归处理其他类型的组件节点的子节点
       node.child.return = node;
       node = node.child;
       continue;
@@ -62,6 +71,7 @@ function appendAllChildren(
       }
       node = node.return;
     }
+    // 处理下一个兄弟节点
     node.sibling.return = node.return;
     node = node.sibling;
   }
